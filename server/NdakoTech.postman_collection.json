@@ -1,0 +1,965 @@
+{
+  "info": {
+    "name": "Ndako Tech - API",
+    "description": "Collection de tests de l'API Ndako Tech (F1 à F9). Lancer seed.sql avant les tests : certains attendent les données de démonstration.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api"
+    }
+  ],
+  "item": [
+    {
+      "name": "0 - Général",
+      "description": "",
+      "item": [
+        {
+          "name": "Test de communication (hello)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/hello",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "hello"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Message reçu\", () => pm.expect(pm.response.json().message).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "1 - Quartiers",
+      "description": "Remplit la liste déroulante des quartiers selon la ville choisie.",
+      "item": [
+        {
+          "name": "Quartiers de Brazzaville",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/quartiers?ville=Brazzaville",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "quartiers"
+              ],
+              "query": [
+                {
+                  "key": "ville",
+                  "value": "Brazzaville"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"Ville renvoyée\", () => pm.expect(d.ville).to.eql(\"Brazzaville\"));",
+                  "pm.test(\"Liste non vide\", () => pm.expect(d.quartiers).to.be.an(\"array\").that.is.not.empty);",
+                  "pm.test(\"Contient Bacongo\", () => pm.expect(d.quartiers).to.include(\"Bacongo\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Quartiers de Pointe-Noire",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/quartiers?ville=Pointe-Noire",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "quartiers"
+              ],
+              "query": [
+                {
+                  "key": "ville",
+                  "value": "Pointe-Noire"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Contient Tié-Tié\", () => pm.expect(pm.response.json().quartiers).to.include(\"Tié-Tié\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ville manquante (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/quartiers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "quartiers"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ville inconnue (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/quartiers?ville=Paris",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "quartiers"
+              ],
+              "query": [
+                {
+                  "key": "ville",
+                  "value": "Paris"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2 - Recherche et liste (F1, F2, F9)",
+      "description": "",
+      "item": [
+        {
+          "name": "Toute la ville - Brazzaville",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements?ville=Brazzaville",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements"
+              ],
+              "query": [
+                {
+                  "key": "ville",
+                  "value": "Brazzaville"
+                }
+              ]
+            },
+            "description": "Sans quartier ni loyer : la recherche porte sur toute la ville."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"6 biens disponibles (RG-01 : l'occupé est exclu)\", () => pm.expect(d.total).to.eql(6));",
+                  "pm.test(\"Aucun bien occupé\", () => d.resultats.forEach(l => pm.expect(l.statut).to.eql(\"disponible\")));",
+                  "pm.test(\"Pas de message d'erreur\", () => pm.expect(d.message).to.be.null);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Toute la ville - Pointe-Noire",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements?ville=Pointe-Noire",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements"
+              ],
+              "query": [
+                {
+                  "key": "ville",
+                  "value": "Pointe-Noire"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"5 biens disponibles\", () => pm.expect(pm.response.json().total).to.eql(5));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filtre quartier - Bacongo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements?ville=Brazzaville&quartier=Bacongo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements"
+              ],
+              "query": [
+                {
+                  "key": "ville",
+                  "value": "Brazzaville"
+                },
+                {
+                  "key": "quartier",
+                  "value": "Bacongo"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"1 résultat\", () => pm.expect(d.total).to.eql(1));",
+                  "pm.test(\"Quartier Bacongo\", () => pm.expect(d.resultats[0].quartier).to.eql(\"Bacongo\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filtre loyer max (RG-02)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements?ville=Brazzaville&loyer_max=100000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements"
+              ],
+              "query": [
+                {
+                  "key": "ville",
+                  "value": "Brazzaville"
+                },
+                {
+                  "key": "loyer_max",
+                  "value": "100000"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Aucun loyer au-dessus du maximum\", () => pm.response.json().resultats.forEach(l => pm.expect(l.loyer).to.be.at.most(100000)));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Quartier + loyer max",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements?ville=Pointe-Noire&quartier=Tié-Tié&loyer_max=150000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements"
+              ],
+              "query": [
+                {
+                  "key": "ville",
+                  "value": "Pointe-Noire"
+                },
+                {
+                  "key": "quartier",
+                  "value": "Tié-Tié"
+                },
+                {
+                  "key": "loyer_max",
+                  "value": "150000"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tri par loyer croissant (F9)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements?ville=Pointe-Noire&loyer_max=130000&tri=loyer_asc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements"
+              ],
+              "query": [
+                {
+                  "key": "ville",
+                  "value": "Pointe-Noire"
+                },
+                {
+                  "key": "loyer_max",
+                  "value": "130000"
+                },
+                {
+                  "key": "tri",
+                  "value": "loyer_asc"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", () => pm.response.to.have.status(200));",
+                  "const loyers = pm.response.json().resultats.map(l => l.loyer);",
+                  "pm.test(\"3 résultats\", () => pm.expect(loyers.length).to.eql(3));",
+                  "pm.test(\"Loyers triés du plus bas au plus haut\", () => pm.expect(loyers).to.eql([...loyers].sort((a, b) => a - b)));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Loyer vide : filtre ignoré",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements?ville=Brazzaville&loyer_max=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements"
+              ],
+              "query": [
+                {
+                  "key": "ville",
+                  "value": "Brazzaville"
+                },
+                {
+                  "key": "loyer_max",
+                  "value": ""
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Même résultat que sans filtre\", () => pm.expect(pm.response.json().total).to.eql(6));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bien sans photo marqué incomplet (RG-03)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements?ville=Brazzaville&quartier=Ouenzé",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements"
+              ],
+              "query": [
+                {
+                  "key": "ville",
+                  "value": "Brazzaville"
+                },
+                {
+                  "key": "quartier",
+                  "value": "Ouenzé"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", () => pm.response.to.have.status(200));",
+                  "const l = pm.response.json().resultats[0];",
+                  "pm.test(\"incomplet = true\", () => pm.expect(l.incomplet).to.be.true);",
+                  "pm.test(\"photo_principale = null\", () => pm.expect(l.photo_principale).to.be.null);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Aucun résultat : message clair",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements?ville=Brazzaville&loyer_max=10000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements"
+              ],
+              "query": [
+                {
+                  "key": "ville",
+                  "value": "Brazzaville"
+                },
+                {
+                  "key": "loyer_max",
+                  "value": "10000"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"total = 0\", () => pm.expect(d.total).to.eql(0));",
+                  "pm.test(\"Message qui invite à élargir\", () => pm.expect(d.message).to.be.a(\"string\").and.not.empty);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3 - Fiche logement (F3, F4, F6)",
+      "description": "",
+      "item": [
+        {
+          "name": "Fiche complète - Studio Bacongo (vérifié)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements",
+                "1"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"Coût d'entrée = loyer x (1 + caution)\", () => pm.expect(d.cout_entree).to.eql(d.loyer * (1 + d.caution_mois)));",
+                  "pm.test(\"Bien vérifié\", () => pm.expect(d.verifie).to.be.true);",
+                  "pm.test(\"Photos présentes\", () => pm.expect(d.photos).to.be.an(\"array\").that.is.not.empty);",
+                  "pm.test(\"Boutons de contact (disponible)\", () => { pm.expect(d.contact.appel).to.match(/^tel:/); pm.expect(d.contact.whatsapp).to.include(\"wa.me\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Fiche sans photo ni caution - Studio Ouenzé",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements/6",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements",
+                "6"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"Fiche incomplète (RG-03)\", () => pm.expect(d.incomplet).to.be.true);",
+                  "pm.test(\"Coût d'entrée null (caution inconnue)\", () => pm.expect(d.cout_entree).to.be.null);",
+                  "pm.test(\"Message caution à confirmer (RG-08)\", () => pm.expect(d.message_caution).to.include(\"Caution à confirmer\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bien occupé - pas de contact",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements/4",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements",
+                "4"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"Statut occupé\", () => pm.expect(d.statut).to.eql(\"occupe\"));",
+                  "pm.test(\"Pas de boutons de contact\", () => pm.expect(d.contact).to.be.null);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Date inconnue - Chambre Makélékélé",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements/7",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements",
+                "7"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"date_inconnue = true\", () => pm.expect(d.date_inconnue).to.be.true);",
+                  "pm.test(\"Signalée dans champs_manquants\", () => pm.expect(d.champs_manquants).to.include(\"date_mise_a_jour\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Fiche inexistante (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements/999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements",
+                "999"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Identifiant invalide (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements/abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements",
+                "abc"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4 - Cas d'erreur de validation",
+      "description": "",
+      "item": [
+        {
+          "name": "Loyer max non numérique (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements?ville=Brazzaville&loyer_max=abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements"
+              ],
+              "query": [
+                {
+                  "key": "ville",
+                  "value": "Brazzaville"
+                },
+                {
+                  "key": "loyer_max",
+                  "value": "abc"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Erreur sur le champ loyer_max\", () => pm.expect(pm.response.json().champs).to.have.property(\"loyer_max\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Loyer max négatif (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements?ville=Brazzaville&loyer_max=-5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements"
+              ],
+              "query": [
+                {
+                  "key": "ville",
+                  "value": "Brazzaville"
+                },
+                {
+                  "key": "loyer_max",
+                  "value": "-5"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ville manquante (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Erreur sur le champ ville\", () => pm.expect(pm.response.json().champs).to.have.property(\"ville\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ville non prise en charge (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements?ville=Paris",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements"
+              ],
+              "query": [
+                {
+                  "key": "ville",
+                  "value": "Paris"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tri inconnu (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logements?ville=Brazzaville&tri=hasard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logements"
+              ],
+              "query": [
+                {
+                  "key": "ville",
+                  "value": "Brazzaville"
+                },
+                {
+                  "key": "tri",
+                  "value": "hasard"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Route inexistante (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/nimporte-quoi",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "nimporte-quoi"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
